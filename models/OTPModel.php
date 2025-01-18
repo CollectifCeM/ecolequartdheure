@@ -1,4 +1,6 @@
 <?php
+
+require_once __DIR__ . '/../config/config.php';
 class OTPModel {
     public static function getWalkingItinerary($fromLat, $fromLng, $toLat, $toLng) {
         $url = OTP_API_URL . "?fromPlace={$fromLat},{$fromLng}&toPlace={$toLat},{$toLng}&mode=WALK";
