@@ -1,49 +1,79 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use GraphQL\Client;
-use GraphQL\Exception\QueryError;
-use GraphQL\QueryBuilder\QueryBuilder;
+use GraphQL\GraphQL;
+use GraphQL\Type\Schema;
+use GraphQL\Language\Parser;
+use GraphQL\Executor\ExecutionResult;
 
 class OTPModel {
-    private $client;
+    private $apiUrl;
 
     public function __construct() {
-        $this->client = new Client(GRAPHQL_API_URL);
+        $this->apiUrl = GRAPHQL_API_URL;
     }
 
     public function getWalkingTrip($fromLat, $fromLng, $toLat, $toLng) {
-        // Construire la requête GraphQL
-        $query = (new QueryBuilder('trip'))
-            ->setVariable('from', 'Location!', ['lat' => (float)$fromLat, 'lon' => (float)$fromLng])
-            ->setVariable('to', 'Location!', ['lat' => (float)$toLat, 'lon' => (float)$toLng])
-            ->setVariable('modes', 'Modes', 'WALK')
-            ->setSelectionSet([
-                'tripPatterns' => [
-                    'aimedStartTime',
-                    'aimedEndTime',
-                    'duration',
-                    'distance',
-                    'legs' => [
-                        'mode',
-                        'distance',
-                        'duration',
-                        'fromPlace' => ['name'],
-                        'toPlace' => ['name'],
-                        'line' => ['publicCode', 'name']
-                    ]
-                ]
-            ]);
+        $query = <<<GRAPHQL
+        query trip(\$from: Location!, \$to: Location!, \$modes: Modes) {
+          trip(from: \$from, to: \$to, modes: \$modes) {
+            tripPatterns {
+              aimedStartTime
+              aimedEndTime
+              duration
+              distance
+              legs {
+                mode
+                distance
+                duration
+                fromPlace { name }
+                toPlace { name }
+                line { publicCode, name }
+              }
+            }
+          }
+        }
+        GRAPHQL;
 
-        try {
-            // Exécuter la requête
-            $response = $this->client->runQuery($query->getQueryString(), true, $query->getVariables());
-            $data = $response->getData();
-            return $data['trip']['tripPatterns'] ?? null;
-        } catch (QueryError $exception) {
-            // Gérer les erreurs
-            error_log($exception->getErrorDetails());
+        $variables = [
+            'from' => ['lat' => (float)$fromLat, 'lon' => (float)$fromLng],
+            'to' => ['lat' => (float)$toLat, 'lon' => (float)$toLng],
+            'modes' => 'WALK',
+        ];
+
+        $response = $this->executeGraphQLQuery($query, $variables);
+
+        if (isset($response['data']['trip']['tripPatterns'])) {
+            return $response['data']['trip']['tripPatterns'];
+        } else {
+            return null; // Erreur ou données manquantes
+        }
+    }
+
+    private function executeGraphQLQuery($query, $variables) {
+        $payload = json_encode([
+            'query' => $query,
+            'variables' => $variables,
+        ]);
+
+        $ch = curl_init($this->apiUrl);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Content-Length: ' . strlen($payload)
+        ]);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+
+        $response = curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            error_log('GraphQL CURL Error: ' . curl_error($ch));
             return null;
         }
+
+        curl_close($ch);
+
+        return json_decode($response, true);
     }
 }

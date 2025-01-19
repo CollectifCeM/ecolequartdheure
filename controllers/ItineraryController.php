@@ -1,9 +1,9 @@
 <?php
-require_once '../models/OTPModel.php';
+require_once 'models/OTPModel.php';
 
 class ItineraryController {
     public static function showForm() {
-        include '../views/form.php';
+        include 'views/form.php';
     }
 
     public static function calculateItinerary() {
@@ -20,6 +20,6 @@ class ItineraryController {
         $model = new OTPModel();
         $tripPatterns = $model->getWalkingTrip($fromLat, $fromLng, $toLat, $toLng);
 
-        include '../views/result.php';
+        include 'views/result.php';
     }
 }
