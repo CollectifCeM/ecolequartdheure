@@ -66,14 +66,15 @@ class OTPModel {
             'variables' => $variables,
         ];
 
+        var_dump($queryString);
+        var_dump($variables);
+
         try {
             // Envoyer la requête avec Guzzle
             $response = $this->httpClient->post($this->apiUrl, [
                 'headers' => ['Content-Type' => 'application/json'],
                 'body' => json_encode($payload),
             ]);
-
-            var_dump($response->getBody());
 
             // Décoder la réponse
             $responseBody = json_decode($response->getBody(), true);
