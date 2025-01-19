@@ -1,11 +1,5 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../config/config.php'; // Inclusion de la configuration
-
-use GraphQL\GraphQL;
-use GraphQL\Type\Schema;
-use GraphQL\Language\Parser;
-use GraphQL\Executor\ExecutionResult;
 
 class OTPModel {
     private $apiUrl;
@@ -42,13 +36,7 @@ class OTPModel {
             'modes' => 'WALK',
         ];
 
-        $response = $this->executeGraphQLQuery($query, $variables);
-
-        if (isset($response['data']['trip']['tripPatterns'])) {
-            return $response['data']['trip']['tripPatterns'];
-        } else {
-            return null; // Erreur ou données manquantes
-        }
+        return $this->executeGraphQLQuery($query, $variables);
     }
 
     private function executeGraphQLQuery($query, $variables) {
