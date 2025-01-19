@@ -46,11 +46,28 @@ class OTPModel {
         }
 
         // Variables pour la requête
-        $variables = [
-            'from' => ['lat' => (float)$fromLat, 'lon' => (float)$fromLng],
-            'to' => ['lat' => (float)$toLat, 'lon' => (float)$toLng],
-            'modes' => 'WALK',
-        ];
+        $variables = Array
+        (
+            [from] => Array
+               (
+                    [coordinates] => Array
+                    (
+                        [latitude] => 43.29309
+                        [longitude] => 5.377947
+                    )
+                )
+
+            [to] => Array
+                (
+                    [coordinates] => Array
+                    (
+                        [latitude] => 43.29292
+                            [longitude] => 5.377613
+                        )
+                )
+
+            [dateTime] => 2025-01-19T20:29:06.480Z
+        );
 
         // Exécuter la requête
         return $this->executeGraphQLQuery($parsedQuery, $variables);
@@ -65,9 +82,6 @@ class OTPModel {
             'query' => $queryString,
             'variables' => $variables,
         ];
-
-        var_dump($queryString);
-        var_dump($variables);
 
         try {
             // Envoyer la requête avec Guzzle
