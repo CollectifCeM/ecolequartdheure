@@ -1,5 +1,5 @@
 <?php
-require_once 'models/OTPModel.php';
+require_once  __DIR__ . '/../models/OTPModel.php';
 
 class ItineraryController {
     public static function showForm() {
