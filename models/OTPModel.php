@@ -1,56 +1,48 @@
 <?php
-require '../vendor/autoload.php';
+require 'vendor/autoload.php';
 
 use GraphQL\Client;
-use GraphQL\Query;
+use GraphQL\Exception\QueryError;
+use GraphQL\QueryBuilder\QueryBuilder;
 
 class OTPModel {
     private $client;
 
     public function __construct() {
-        $this->client = new Client(GRAPHQL_API_URL, []);
+        $this->client = new Client(GRAPHQL_API_URL);
     }
 
     public function getWalkingTrip($fromLat, $fromLng, $toLat, $toLng) {
-        $query = <<<GRAPHQL
-query trip(\$from: Location!, \$to: Location!, \$modes: Modes) {
-  trip(from: \$from, to: \$to, modes: \$modes) {
-    tripPatterns {
-      aimedStartTime
-      aimedEndTime
-      duration
-      distance
-      legs {
-        mode
-        distance
-        duration
-        fromPlace {
-          name
-        }
-        toPlace {
-          name
-        }
-        line {
-          publicCode
-          name
-        }
-      }
-    }
-  }
-}
-GRAPHQL;
-
-        try {
-            $response = $this->client->runRawQuery($query, true, [
-                'from' => ['lat' => (float) $fromLat, 'lon' => (float) $fromLng],
-                'to' => ['lat' => (float) $toLat, 'lon' => (float) $toLng],
-                'modes' => 'WALK'
+        // Construire la requête GraphQL
+        $query = (new QueryBuilder('trip'))
+            ->setVariable('from', 'Location!', ['lat' => (float)$fromLat, 'lon' => (float)$fromLng])
+            ->setVariable('to', 'Location!', ['lat' => (float)$toLat, 'lon' => (float)$toLng])
+            ->setVariable('modes', 'Modes', 'WALK')
+            ->setSelectionSet([
+                'tripPatterns' => [
+                    'aimedStartTime',
+                    'aimedEndTime',
+                    'duration',
+                    'distance',
+                    'legs' => [
+                        'mode',
+                        'distance',
+                        'duration',
+                        'fromPlace' => ['name'],
+                        'toPlace' => ['name'],
+                        'line' => ['publicCode', 'name']
+                    ]
+                ]
             ]);
 
+        try {
+            // Exécuter la requête
+            $response = $this->client->runQuery($query->getQueryString(), true, $query->getVariables());
             $data = $response->getData();
             return $data['trip']['tripPatterns'] ?? null;
-        } catch (Exception $e) {
-            error_log($e->getMessage());
+        } catch (QueryError $exception) {
+            // Gérer les erreurs
+            error_log($exception->getErrorDetails());
             return null;
         }
     }
