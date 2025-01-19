@@ -97,8 +97,6 @@ class OTPModel {
             'modes' => 'WALK',
         ];
 
-        var_dump($variables);
-
         return $this->executeGraphQLQuery($query, $variables);
     }
 
@@ -117,6 +115,7 @@ class OTPModel {
         ]);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
 
+        var_dump($ch);
         $response = curl_exec($ch);
 
         if (curl_errno($ch)) {
