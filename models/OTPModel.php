@@ -65,7 +65,7 @@ class OTPModel {
             'query' => $queryString,
             'variables' => $variables,
         ];
-
+        var_dump($payload);
         try {
             // Envoyer la requête avec Guzzle
             $response = $this->httpClient->post($this->apiUrl, [
