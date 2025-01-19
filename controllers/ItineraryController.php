@@ -17,7 +17,8 @@ class ItineraryController {
         $toLat = $_POST['to_lat'];
         $toLng = $_POST['to_lng'];
 
-        $result = OTPModel::getWalkingItinerary($fromLat, $fromLng, $toLat, $toLng);
+        $model = new OTPModel();
+        $tripPatterns = $model->getWalkingTrip($fromLat, $fromLng, $toLat, $toLng);
 
         include 'views/result.php';
     }

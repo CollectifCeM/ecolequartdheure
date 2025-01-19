@@ -1,22 +1,57 @@
 <?php
+require 'vendor/autoload.php';
 
-require_once __DIR__ . '/../config/config.php';
+use GraphQL\Client;
+use GraphQL\Query;
+
 class OTPModel {
-    public static function getWalkingItinerary($fromLat, $fromLng, $toLat, $toLng) {
-        $url = OTP_API_URL . "?fromPlace={$fromLat},{$fromLng}&toPlace={$toLat},{$toLng}&mode=WALK";
+    private $client;
 
-        $response = file_get_contents($url);
-        $data = json_decode($response, true);
+    public function __construct() {
+        $this->client = new Client(GRAPHQL_API_URL, []);
+    }
 
-        if (isset($data['plan']['itineraries'][0])) {
-            $itinerary = $data['plan']['itineraries'][0];
-            return [
-                'duration' => $itinerary['duration'], // Durée en secondes
-                'distance' => $itinerary['legs'][0]['distance'], // Distance en mètres
-                'steps' => $itinerary['legs'][0]['steps'] // Étapes
-            ];
-        } else {
-            return null; // Aucun itinéraire trouvé
+    public function getWalkingTrip($fromLat, $fromLng, $toLat, $toLng) {
+        $query = <<<GRAPHQL
+query trip(\$from: Location!, \$to: Location!, \$modes: Modes) {
+  trip(from: \$from, to: \$to, modes: \$modes) {
+    tripPatterns {
+      aimedStartTime
+      aimedEndTime
+      duration
+      distance
+      legs {
+        mode
+        distance
+        duration
+        fromPlace {
+          name
+        }
+        toPlace {
+          name
+        }
+        line {
+          publicCode
+          name
+        }
+      }
+    }
+  }
+}
+GRAPHQL;
+
+        try {
+            $response = $this->client->runRawQuery($query, true, [
+                'from' => ['lat' => (float) $fromLat, 'lon' => (float) $fromLng],
+                'to' => ['lat' => (float) $toLat, 'lon' => (float) $toLng],
+                'modes' => 'WALK'
+            ]);
+
+            $data = $response->getData();
+            return $data['trip']['tripPatterns'] ?? null;
+        } catch (Exception $e) {
+            error_log($e->getMessage());
+            return null;
         }
     }
 }

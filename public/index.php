@@ -1,7 +1,6 @@
 <?php
 require_once '../controllers/ItineraryController.php';
 
-// Router basique
 $requestUri = $_SERVER['REQUEST_URI'];
 
 if ($requestUri === '/' || $requestUri === '/index.php') {
