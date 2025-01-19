@@ -52,7 +52,7 @@ class OTPModel {
                (
                     [coordinates] => Array
                     (
-                        [latitude] => 43.29309
+                        [latitude] => 43.29309,
                         [longitude] => 5.377947
                     )
                 )
@@ -61,12 +61,12 @@ class OTPModel {
                 (
                     [coordinates] => Array
                     (
-                        [latitude] => 43.29292
-                            [longitude] => 5.377613
+                        [latitude] => 43.29292,
+                        [longitude] => 5.377613
                         )
                 )
 
-            [dateTime] => 2025-01-19T20:29:06.480Z
+            [dateTime] => "2025-01-19T20:29:06.480Z"
         );
 
         // Exécuter la requête
