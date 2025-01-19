@@ -46,27 +46,20 @@ class OTPModel {
         }
 
         // Variables pour la requête
-        $variables = Array
-        (
-            [from] => Array
-               (
-                    [coordinates] => Array
-                    (
-                        [latitude] => 43.29309,
-                        [longitude] => 5.377947
-                    )
-                ),
-
-            [to] => Array
-                (
-                    [coordinates] => Array
-                    (
-                        [latitude] => 43.29292,
-                        [longitude] => 5.377613
-                        )
-                ),
-
-            [dateTime] => "2025-01-19T20:29:06.480Z"
+        $variables = array(
+            "from" => array(
+                "coordinates" => array(
+                    "latitude" => 43.29309,
+                    "longitude" => 5.377947
+                )
+            ),
+            "to" => array(
+                "coordinates" => array(
+                    "latitude" => 43.29292,
+                    "longitude" => 5.377613
+                )
+            ),
+            "dateTime" => "2025-01-19T20:29:06.480Z"
         );
 
         // Exécuter la requête
