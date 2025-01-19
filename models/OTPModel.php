@@ -97,6 +97,8 @@ class OTPModel {
             'modes' => 'WALK',
         ];
 
+        var_dump($variables);
+
         return $this->executeGraphQLQuery($query, $variables);
     }
 
