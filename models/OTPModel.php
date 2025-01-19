@@ -86,11 +86,6 @@ class OTPModel {
             // Décoder la réponse
             $responseBody = json_decode($response->getBody(), true);
 
-            if (isset($responseBody['errors'])) {
-                error_log('GraphQL Errors: ' . json_encode($responseBody['errors']));
-                return null;
-            }
-
             return $responseBody['data'] ?? null;
         } catch (\Exception $e) {
             error_log('GraphQL Request Error: ' . $e->getMessage());
