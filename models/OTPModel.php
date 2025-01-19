@@ -107,7 +107,7 @@ class OTPModel {
         ]);
 
         $ch = curl_init($this->apiUrl);
-        var_dump($ch);
+        var_dump($this->apiUrl);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, [
