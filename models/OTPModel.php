@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../config/config.php'; // Inclusion de la configuration
 
 use GraphQL\GraphQL;
 use GraphQL\Type\Schema;
