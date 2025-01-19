@@ -1,131 +1,90 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use GraphQL\Language\Parser;
+use GraphQL\Language\AST\DocumentNode;
+use GuzzleHttp\Client as HttpClient;
+
 class OTPModel {
     private $apiUrl;
+    private $httpClient;
 
     public function __construct() {
         $this->apiUrl = GRAPHQL_API_URL;
+        $this->httpClient = new HttpClient(); // Guzzle Client
     }
 
     public function getWalkingTrip($fromLat, $fromLng, $toLat, $toLng) {
+        // Construire la requête GraphQL
         $query = <<<GRAPHQL
-        query trip($from: Location!, $to: Location!, $arriveBy: Boolean, $dateTime: DateTime, $numTripPatterns: Int, $searchWindow: Int, $modes: Modes, $itineraryFiltersDebug: ItineraryFilterDebugProfile, $wheelchairAccessible: Boolean, $pageCursor: String) {
-          trip(
-            from: $from
-            to: $to
-            arriveBy: $arriveBy
-            dateTime: $dateTime
-              numTripPatterns: $numTripPatterns
-            searchWindow: $searchWindow
-            modes: $modes
-            itineraryFilters: {debug: $itineraryFiltersDebug}
-            wheelchairAccessible: $wheelchairAccessible
-            pageCursor: $pageCursor
-          ) {
-            previousPageCursor
-            nextPageCursor
+        query trip(\$from: Location!, \$to: Location!, \$modes: Modes) {
+          trip(from: \$from, to: \$to, modes: \$modes) {
             tripPatterns {
               aimedStartTime
               aimedEndTime
-              expectedEndTime
-              expectedStartTime
               duration
               distance
-              generalizedCost
               legs {
-                id
                 mode
-                aimedStartTime
-                aimedEndTime
-                expectedEndTime
-                expectedStartTime
-                realtime
                 distance
                 duration
-                generalizedCost
-                fromPlace {
-                  name
-                  quay {
-                    id
-                  }
-                }
-                toPlace {
-                  name
-                  quay {
-                    id
-                  }
-                }
-                toEstimatedCall {
-                  destinationDisplay {
-                    frontText
-                  }
-                }
-                line {
-                  publicCode
-                  name
-                  id
-                  presentation {
-                    colour
-                  }
-                }
-                authority {
-                  name
-                  id
-                }
-                pointsOnLink {
-                  points
-                }
-                interchangeTo {
-                  staySeated
-                }
-                interchangeFrom {
-                  staySeated
-                }
-              }
-              systemNotices {
-                tag
+                fromPlace { name }
+                toPlace { name }
+                line { publicCode, name }
               }
             }
           }
         }
         GRAPHQL;
 
+        // Valider la requête avec Webonyx
+        try {
+            $parsedQuery = Parser::parse($query); // Valide la syntaxe GraphQL
+        } catch (\Exception $e) {
+            error_log('Invalid GraphQL query: ' . $e->getMessage());
+            return null;
+        }
+
+        // Variables pour la requête
         $variables = [
             'from' => ['lat' => (float)$fromLat, 'lon' => (float)$fromLng],
             'to' => ['lat' => (float)$toLat, 'lon' => (float)$toLng],
             'modes' => 'WALK',
         ];
 
-        return $this->executeGraphQLQuery($query, $variables);
+        // Exécuter la requête
+        return $this->executeGraphQLQuery($parsedQuery, $variables);
     }
 
-    private function executeGraphQLQuery($query, $variables) {
-        $payload = json_encode([
-            'query' => $query,
+    private function executeGraphQLQuery(DocumentNode $query, $variables) {
+        // Convertir le DocumentNode en texte GraphQL
+        $queryString = (string)$query;
+
+        // Préparer la charge utile pour l'API GraphQL
+        $payload = [
+            'query' => $queryString,
             'variables' => $variables,
-        ]);
+        ];
 
-        $ch = curl_init($this->apiUrl);
-        var_dump($this->apiUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Content-Length: ' . strlen($payload)
-        ]);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+        try {
+            // Envoyer la requête avec Guzzle
+            $response = $this->httpClient->post($this->apiUrl, [
+                'headers' => ['Content-Type' => 'application/json'],
+                'body' => json_encode($payload),
+            ]);
 
-        var_dump($ch);
-        $response = curl_exec($ch);
+            // Décoder la réponse
+            $responseBody = json_decode($response->getBody(), true);
 
-        if (curl_errno($ch)) {
-            error_log('GraphQL CURL Error: ' . curl_error($ch));
+            if (isset($responseBody['errors'])) {
+                error_log('GraphQL Errors: ' . json_encode($responseBody['errors']));
+                return null;
+            }
+
+            return $responseBody['data'] ?? null;
+        } catch (\Exception $e) {
+            error_log('GraphQL Request Error: ' . $e->getMessage());
             return null;
         }
-
-        curl_close($ch);
-
-        return json_decode($response, true);
     }
 }
