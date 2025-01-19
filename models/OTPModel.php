@@ -73,7 +73,7 @@ class OTPModel {
                 'body' => json_encode($payload),
             ]);
 
-            var_dump($response);
+            var_dump($response->getBody());
 
             // Décoder la réponse
             $responseBody = json_decode($response->getBody(), true);
