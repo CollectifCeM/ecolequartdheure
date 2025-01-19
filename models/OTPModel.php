@@ -58,14 +58,14 @@ class OTPModel {
 
     private function executeGraphQLQuery(DocumentNode $query, $variables) {
         // Convertir le DocumentNode en texte GraphQL
-        $queryString = (string)$query;
+        $queryString = $query->loc->source->body;
 
         // Préparer la charge utile pour l'API GraphQL
         $payload = [
             'query' => $queryString,
             'variables' => $variables,
         ];
-        var_dump($payload);
+
         try {
             // Envoyer la requête avec Guzzle
             $response = $this->httpClient->post($this->apiUrl, [
