@@ -92,8 +92,8 @@ class OTPModel {
         GRAPHQL;
 
         $variables = [
-            'from' => ['lat' => $fromLat, 'lon' => $fromLng],
-            'to' => ['lat' => $toLat, 'lon' => $toLng],
+            'from' => ['lat' => (float)$fromLat, 'lon' => (float)$fromLng],
+            'to' => ['lat' => (float)$toLat, 'lon' => (float)$toLng],
             'modes' => 'WALK',
         ];
 
