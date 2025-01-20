@@ -38,7 +38,6 @@
 <body>
 <div class="result-container">
     <h1 class="result-title">Résultat de l'itinéraire</h1>
-    <?php var_dump($tripPatterns); ?>
     <?php if (!empty($tripPatterns['trip']['tripPatterns'])): ?>
         <?php foreach ($tripPatterns['trip']['tripPatterns'] as $pattern): ?>
             <div class="result-section">
