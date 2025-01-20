@@ -145,6 +145,8 @@ class OTPModel {
         // Fermer cURL
         curl_close($ch);
 
+        var_dump($response);
+
         // Décoder la réponse JSON
         $responseData = json_decode($response, true);
 
