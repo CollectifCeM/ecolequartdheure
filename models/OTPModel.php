@@ -11,18 +11,18 @@ class OTPModel {
     public function getWalkingTrip($fromLat, $fromLng, $toLat, $toLng) {
         // Construire la requête GraphQL
         $query = <<<GRAPHQL
-        query trip($from: Location!, $to: Location!, $arriveBy: Boolean, $dateTime: DateTime, $numTripPatterns: Int, $searchWindow: Int, $modes: Modes, $itineraryFiltersDebug: ItineraryFilterDebugProfile, $wheelchairAccessible: Boolean, $pageCursor: String) {
+        query trip(\$from: Location!, \$to: Location!, \$arriveBy: Boolean, \$dateTime: DateTime, \$numTripPatterns: Int, \$searchWindow: Int, \$modes: Modes, \$itineraryFiltersDebug: ItineraryFilterDebugProfile, \$wheelchairAccessible: Boolean, \$pageCursor: String) {
           trip(
-            from: $from
-            to: $to
-            arriveBy: $arriveBy
-            dateTime: $dateTime
-            numTripPatterns: $numTripPatterns
-            searchWindow: $searchWindow
-            modes: $modes
-            itineraryFilters: {debug: $itineraryFiltersDebug}
-            wheelchairAccessible: $wheelchairAccessible
-            pageCursor: $pageCursor
+            from: \$from
+            to: \$to
+            arriveBy: \$arriveBy
+            dateTime: \$dateTime
+            numTripPatterns: \$numTripPatterns
+            searchWindow: \$searchWindow
+            modes: \$modes
+            itineraryFilters: {debug: \$itineraryFiltersDebug}
+            wheelchairAccessible: \$wheelchairAccessible
+            pageCursor: \$pageCursor
           ) {
             previousPageCursor
             nextPageCursor
