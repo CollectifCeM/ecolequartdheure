@@ -51,7 +51,7 @@
                             <?= htmlspecialchars($leg['fromPlace']['name']) ?> →
                             <?= htmlspecialchars($leg['toPlace']['name']) ?> :
                             <?= htmlspecialchars($leg['mode']) ?>
-                            (<?= round($leg['distance'] , 2) ?> m)
+                            (<?= $leg['distance'] ?> m)
                         </li>
                     <?php endforeach; ?>
                 </ul>
