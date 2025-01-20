@@ -39,11 +39,11 @@
 <div class="result-container">
     <h1 class="result-title">Résultat de l'itinéraire</h1>
     <?php var_dump($tripPatterns); ?>
-    <?php if ($tripPatterns): ?>
-        <?php foreach ($tripPatterns as $pattern): ?>
+    <?php if (!empty($tripPatterns['trip']['tripPatterns'])): ?>
+        <?php foreach ($tripPatterns['trip']['tripPatterns'] as $pattern): ?>
             <div class="result-section">
                 <h2>Trajet :</h2>
-                <p>Durée : <?= $pattern['duration'] ?> minutes</p>
+                <p>Durée : <?= round($pattern['duration'] / 60, 1) ?> minutes</p>
                 <p>Distance : <?= $pattern['distance'] ?> m</p>
                 <h3>Étapes :</h3>
                 <ul>
