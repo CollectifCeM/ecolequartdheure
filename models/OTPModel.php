@@ -10,7 +10,6 @@ class OTPModel {
 
     public function __construct() {
         $this->apiUrl = GRAPHQL_API_URL;
-        $this->httpClient = new HttpClient(); // Guzzle Client
     }
 
     public function getWalkingTrip($fromLat, $fromLng, $toLat, $toLng) {
