@@ -3,7 +3,6 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use GraphQL\Language\Parser;
 use GraphQL\Language\AST\DocumentNode;
-use GuzzleHttp\Client as HttpClient;
 
 class OTPModel {
     private $apiUrl;
