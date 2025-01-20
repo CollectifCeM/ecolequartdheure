@@ -1,95 +1,50 @@
 <?php
-require_once __DIR__ . '/../vendor/autoload.php';
+require 'vendor/autoload.php';
 
-use GraphQL\Language\Parser;
-use GraphQL\Language\AST\DocumentNode;
+use GraphQL\Client;
+use GraphQL\Exception\QueryError;
+use GraphQL\QueryBuilder\QueryBuilder;
 
 class OTPModel {
-    private $apiUrl;
-    private $httpClient;
+    private $client;
 
     public function __construct() {
-        $this->apiUrl = GRAPHQL_API_URL;
+        $this->client = new Client(GRAPHQL_API_URL);
     }
 
     public function getWalkingTrip($fromLat, $fromLng, $toLat, $toLng) {
         // Construire la requête GraphQL
-        $query = <<<GRAPHQL
-        query trip(\$from: Location!, \$to: Location!, \$modes: Modes) {
-          trip(from: \$from, to: \$to, modes: \$modes) {
-            tripPatterns {
-              aimedStartTime
-              aimedEndTime
-              duration
-              distance
-              legs {
-                mode
-                distance
-                duration
-                fromPlace { name }
-                toPlace { name }
-                line { publicCode, name }
-              }
-            }
-          }
-        }
-        GRAPHQL;
-
-        // Valider la requête avec Webonyx
-        try {
-            $parsedQuery = Parser::parse($query); // Valide la syntaxe GraphQL
-        } catch (\Exception $e) {
-            error_log('Invalid GraphQL query: ' . $e->getMessage());
-            return null;
-        }
-
-        // Variables pour la requête
-        $variables = array(
-            "from" => array(
-                "coordinates" => array(
-                    "latitude" => 43.29309,
-                    "longitude" => 5.377947
-                )
-            ),
-            "to" => array(
-                "coordinates" => array(
-                    "latitude" => 43.29292,
-                    "longitude" => 5.377613
-                )
-            ),
-            "dateTime" => "2025-01-21T20:29:06.480Z"
-        );
-
-        // Exécuter la requête
-        return $this->executeGraphQLQuery($parsedQuery, $variables);
-    }
-
-    private function executeGraphQLQuery(DocumentNode $query, $variables) {
-        // Convertir le DocumentNode en texte GraphQL
-        $queryString = $query->loc->source->body;
-
-        // Préparer la charge utile pour l'API GraphQL
-        $payload = [
-            'query' => $queryString,
-            'variables' => $variables,
-        ];
-
-        try {
-            // Envoyer la requête avec Guzzle
-            $response = $this->httpClient->post($this->apiUrl, [
-                'headers' => ['Content-Type' => 'application/json'],
-                'body' => json_encode($payload),
+        $query = (new QueryBuilder('trip'))
+            ->setVariable('from', 'Location!', ['lat' => (float)$fromLat, 'lon' => (float)$fromLng])
+            ->setVariable('to', 'Location!', ['lat' => (float)$toLat, 'lon' => (float)$toLng])
+            ->setVariable('modes', 'Modes', 'WALK')
+            ->setSelectionSet([
+                'tripPatterns' => [
+                    'aimedStartTime',
+                    'aimedEndTime',
+                    'duration',
+                    'distance',
+                    'legs' => [
+                        'mode',
+                        'distance',
+                        'duration',
+                        'fromPlace' => ['name'],
+                        'toPlace' => ['name'],
+                        'line' => ['publicCode', 'name']
+                    ]
+                ]
             ]);
 
-            // Décoder la réponse
-            $responseBody = json_decode($response->getBody(), true);
-
-            var_dump($responseBody);
-
-            return $responseBody['data'] ?? null;
-        } catch (\Exception $e) {
-            error_log('GraphQL Request Error: ' . $e->getMessage());
+        try {
+            // Exécuter la requête
+            $response = $this->client->runQuery($query->getQueryString(), true, $query->getVariables());
+            $data = $response->getData();
+            return $data['trip']['tripPatterns'] ?? null;
+        } catch (QueryError $exception) {
+            // Gérer les erreurs
+            error_log($exception->getErrorDetails());
             return null;
         }
     }
 }
+
