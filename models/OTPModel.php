@@ -55,49 +55,57 @@ class OTPModel {
     }
 
     private function executeGraphQLQuery($query, $variables) {
-        // Préparer le payload JSON
-        $payload = json_encode([
-            "query" => $query,
-            "variables" => $variables,
-        ]);
+
+        // URL de l'API GraphQL
+        $url = 'http://localhost:8080/otp/gtfs/v1';
+
+        // Corps de la requête (JSON)
+        $data = [
+            "query" => "query stops {
+              stops {
+                gtfsId
+                name
+              }
+            }",
+                        "operationName" => "stops"
+                    ];
 
         // Initialiser cURL
-        $ch = curl_init($this->apiUrl);
+                $ch = curl_init($url);
 
         // Configurer les options cURL
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Content-Length: ' . strlen($payload)
-        ]);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); // Retourner la réponse sous forme de chaîne
+                curl_setopt($ch, CURLOPT_POST, true);          // Utiliser la méthode POST
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Content-Type: application/json',          // Type de contenu JSON
+                    'OTPTimeout: 180000'                       // En-tête personnalisé pour le délai OTP
+                ]);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)); // Corps de la requête en JSON
 
-        // Exécuter la requête et capturer la réponse
-        $response = curl_exec($ch);
+        // Exécuter la requête
+                $response = curl_exec($ch);
 
         // Vérifier les erreurs cURL
-        if (curl_errno($ch)) {
-            error_log('GraphQL cURL Error: ' . curl_error($ch));
-            curl_close($ch);
-            return null;
-        }
+                if (curl_errno($ch)) {
+                    echo 'Erreur cURL : ' . curl_error($ch);
+                    curl_close($ch);
+                    exit;
+                }
 
-        // Fermer cURL
-        curl_close($ch);
+        // Fermer la session cURL
+                curl_close($ch);
 
         // Décoder la réponse JSON
-        $responseData = json_decode($response, true);
+                $responseData = json_decode($response, true);
 
-        var_dump($responseData);
-
-        // Vérifier les erreurs dans la réponse GraphQL
-        if (isset($responseData['errors'])) {
-            error_log('GraphQL Errors: ' . json_encode($responseData['errors']));
-            return null;
+        // Afficher les résultats
+                if ($responseData) {
+                    echo "<pre>";
+                    print_r($responseData);
+                    echo "</pre>";
+                } else {
+                    echo "Erreur lors de la récupération des données.";
         }
 
-        // Retourner les données
-        return $responseData['data'] ?? null;
     }
 }
