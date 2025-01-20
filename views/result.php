@@ -42,8 +42,8 @@
         <?php foreach ($tripPatterns as $pattern): ?>
             <div class="result-section">
                 <h2>Trajet :</h2>
-                <p>Durée : <?= round($pattern['duration'], 1) ?> minutes</p>
-                <p>Distance : <?= round($pattern['distance'] , 2) ?> m</p>
+                <p>Durée : <?= $pattern['duration'] ?> minutes</p>
+                <p>Distance : <?= $pattern['distance'] ?> m</p>
                 <h3>Étapes :</h3>
                 <ul>
                     <?php foreach ($pattern['legs'] as $leg): ?>
