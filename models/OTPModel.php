@@ -89,6 +89,8 @@ class OTPModel {
         // Décoder la réponse JSON
         $responseData = json_decode($response, true);
 
+        var_dump($responseData);
+
         // Vérifier les erreurs dans la réponse GraphQL
         if (isset($responseData['errors'])) {
             error_log('GraphQL Errors: ' . json_encode($responseData['errors']));
